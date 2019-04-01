@@ -34,6 +34,8 @@ def get_mac_address_table(switch_ip, login, password):
         t.sendline('a')
         t.expect('#')
         mac_table += t.before
+    t.sendline('enable clipaging')
+    t.expect('#')
     t.sendline('logout')
     mac_dict = {}
     for entry in mac_table.split('\n'):
