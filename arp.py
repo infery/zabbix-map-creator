@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-"""
-Этот скрипт загружает ARP-таблицу с агрегации в базу,
-"""
-import argparse
-import configparser
 import sqlite3
 import re
-import mac
 from sys import stdout
+import argparse
+import configparser
 from pyzabbix import ZabbixAPI
 import zabbix
+import mac
 
 parser = argparse.ArgumentParser(description="ARP|Zabbix loader")
 parser.add_argument('config', type=str, help="Config file name")
@@ -22,6 +19,7 @@ cfg.read(args.config)
 
 dbname = cfg['network']['database']
 
+
 def progress(i, msg):
     prgs = ['|', '/', '-', '\\']
     stdout.write("\r" + '[' + prgs[i % 4] + ']' + ' ' + msg)
@@ -29,6 +27,9 @@ def progress(i, msg):
 
 
 def create_tables():
+    '''Создаем/Пересоздаем таблицу ARP при каждом запуске. Таблицу zbxhosts создаем, если не было, но
+    не пересоздаем и не очищаем, в ней хранятся hostid из zabbix. Это нужно, чтобы
+    каждый раз не опрашивать zabbix, т.к. это может занимать много времени'''
     global dbname
     """Создаем таблицу в базе."""
     with sqlite3.connect(dbname) as con:
@@ -46,12 +47,11 @@ def create_tables():
         con.execute("create INDEX IF NOT EXISTS zbx_idx ON zbxhosts(ip,hostid)")
 
 
-def load_arp_to_db(filename, empty_before_insert=True):
+def load_arp_to_db(filename):
+    '''Парсим файл с arp и добавляем все записи в базу. Если вендор для мак-адреса не найден или ignore,
+    то запись в базу не попадает, сообщаем об этом'''
     global dbname
-    """Загружаем данные из файла с арп-таблицей в базу данных"""
     with sqlite3.connect(dbname) as con:
-        if empty_before_insert:
-            con.execute('delete from arp')
         # проверяем каждую строку на ip и мак, добавляем их в таблицу arp
         with (open(filename, 'r')) as arp_file:
             for line in arp_file:
@@ -75,6 +75,7 @@ def load_arp_to_db(filename, empty_before_insert=True):
 
 
 def get_hostids_from_zbx():
+    '''Достаем из базы все IP, для которых zbx-hostid еще неизвестен и опрашиваем заббикс для них'''
     global dbname
     with sqlite3.connect(dbname) as con:
         con.row_factory = sqlite3.Row
