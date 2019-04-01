@@ -12,6 +12,7 @@ import mac
 from pyzabbix.api import ZabbixAPI
 import zabbix
 
+
 parser = argparse.ArgumentParser(description="Craft macs")
 parser.add_argument('config', type=str, help="Config file name")
 parser.add_argument('--ip', type=str, help="Trace ip")
@@ -20,9 +21,7 @@ args = parser.parse_args()
 cfg = configparser.ConfigParser()
 cfg.read(args.config)
 
-# эта переменная нужна, чтобы понять, где у свича аплинк
-uplink_mac = mac.normalize_mac(cfg['network']['uplink_mac'])
-uplink_ip = ''
+
 
 dbname = cfg['network']['database']
 
@@ -55,6 +54,25 @@ def get_devices_list_from_db():
                 devices[row['ip']] = {}
             devices[row['ip']]['mac'] = row['mac']
             devices[row['ip']]['hostid'] = row['zbxhostid']
+
+
+def calc_uplink_mac():
+    '''Фунция возвращает самый "популярный" мак-адрес в mac_address_table.'''
+    macs = []
+    with sqlite3.connect(dbname) as con:
+        con.row_factory = sqlite3.Row
+        for row in con.execute('SELECT mac FROM mac_address_table'):
+            macs.append(row['mac'])
+    # delete duplicate record
+    macs_uniq = set(macs)
+    macs_with_counter = [] # [[105, '12:34:56:67:11:22'], [104, '12:34:56:67:11:33']]
+    for mac_addr in macs_uniq:
+        macs_with_counter.append([
+            macs.count(mac_addr),
+            mac_addr
+        ])
+    macs_with_counter.sort(key=itemgetter(0), reverse=True)
+    return macs_with_counter.pop(0)[1]
 
 
 def get_set_uplinks():
@@ -180,6 +198,18 @@ def sort_transit_devices(transit_devices):
     return tmp_tr_list
 
 
+possible_uplink_mac = calc_uplink_mac()
+# эта переменная нужна, чтобы понять, где у свича аплинк
+if 'uplink_mac' in cfg['network']:
+    uplink_mac = mac.normalize_mac(cfg['network']['uplink_mac'])
+    print 'Using configured uplink mac', uplink_mac
+else:
+    uplink_mac = possible_uplink_mac
+    print 'Configured uplink mac not found, using calculated mac', possible_uplink_mac
+
+uplink_ip = ''
+
+
 get_devices_list_from_db() # заполняем массив служебной информацией из таблицы ARP
 print
 get_set_uplinks() # заполняем в базе информацию у кого какой аплинк
@@ -238,7 +268,7 @@ sorted_all_lists = []
 try:
     for elt, items in groupby(all_lists, itemgetter(min_transit_count)):
         for i in items:
-            print(i)
+            # print(i)
             sorted_all_lists.append(i)
 except:
     print 'Problem while sorting'
@@ -303,3 +333,5 @@ zabbix.create_or_update_map(z_api=z_api,
     links=links, 
     mwidth=x+100, 
     mheight=max_height)
+
+print 'Done'
