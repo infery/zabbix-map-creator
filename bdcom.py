@@ -7,7 +7,6 @@ import re
 import mac
 
 def get_mac_address_table(switch_ip, login, password):
-    """Принимает в качестве аргумента адрес свича и доступ"""
     t = pexpect.spawn('telnet {}'.format(switch_ip))
     try:
         t.expect('[Uu]ser[Nn]ame:')
@@ -27,7 +26,6 @@ def get_mac_address_table(switch_ip, login, password):
     t.sendline('exit')
     mac_dict = {}
     for entry in mac_table.split('\n'):
-        # 104 VLAN104 00-1A-A1-7F-6C-4B 28 Dynamic
         match = re.search('\d+\s+(?P<mac_addr>\S+)\s+DYNAMIC\s+(?P<port>\S+)', entry)
         if match:
             if match.group('port') == 'CPU':

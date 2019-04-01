@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-"""
-этот скрип берет информацию из базы и пытается 
-построить карту сети =) хе-хе
-"""
 from itertools import groupby
 from operator import itemgetter
 from sys import stdout
@@ -45,7 +41,7 @@ def progress(i, msg):
 
 
 def get_devices_list_from_db():
-    """ДОстаем всю информацию о железках из базы для последующего быстрого доступа"""
+    '''ДОстаем всю информацию о железках из базы для последующего быстрого доступа'''
     with sqlite3.connect(dbname) as con:
         con.row_factory = sqlite3.Row
         result = con.execute("""SELECT arp.ip AS ip,
@@ -56,14 +52,14 @@ def get_devices_list_from_db():
                                 FROM arp, zbxhosts WHERE arp.ip = zbxhosts.ip""")
         for row in result:
             if row['ip'] not in devices: 
-                devices[row['ip']] = {} # инизиализация словаря 
+                devices[row['ip']] = {}
             devices[row['ip']]['mac'] = row['mac']
-            devices[row['ip']]['hostid'] = row['zbxhostid'] # hostid заносит скрипт apr.py
+            devices[row['ip']]['hostid'] = row['zbxhostid']
 
 
 def get_set_uplinks():
-    """Функиция заполняет поле аплинка в массиве свиче и проставляет поле uplink в базе.
-    Это поле потом понадобится, чтобы найти транзитные свичи и отсортировтаь их"""
+    '''Функиция заполняет поле аплинка в словаре свича и проставляет поле uplink в базе.
+    Это поле потом понадобится, чтобы найти транзитные свичи и отсортировтаь их'''
     with sqlite3.connect(dbname) as con:
         for i, device in enumerate(devices.keys()):
             uplink = get_port_by_mac(ip=device, mac=uplink_mac)
@@ -79,20 +75,20 @@ def get_set_uplinks():
 
 
 def switch_is_edge(switch_ip, uplink_port):
-    """для всех маков в таблице ARP проверяем на этом свиче, есть ли мак
+    '''для всех маков в таблице ARP проверяем на этом свиче, есть ли мак
        на каком-нибудь порту, отличном от аплинка. Если нет, значит железка крайняя.
        На вход принимает IP свича, который нужно проверить является ли он крайним.
-       Если свич является edge - заносим эту информацию в базу, она нам пригодится"""
+       Если свич является edge - заносим эту информацию в базу, она нам пригодится'''
     edge = True
     with sqlite3.connect(dbname) as con:
         cursor = con.cursor()
         for device in devices.keys():
             if switch_ip == device: continue
             sql = """SELECT port FROM mac_address_table WHERE
-                        mac_address_table.ip = '{switch_ip}' AND
-                        mac_address_table.port != '{uplink_port}' AND
-                        mac_address_table.mac IN
-                        (SELECT mac FROM arp where ip != '{switch_ip}' AND uplink IS NOT NULL)""".format(
+                        mac_address_table.ip = '{switch_ip}'
+                            AND mac_address_table.port != '{uplink_port}'
+                            AND mac_address_table.mac IN
+                                (SELECT mac FROM arp where ip != '{switch_ip}' AND uplink IS NOT NULL)""".format(
                             uplink_port = uplink_port,
                             switch_ip = switch_ip)
             cursor.execute(sql)
@@ -106,9 +102,9 @@ def switch_is_edge(switch_ip, uplink_port):
 
 
 def get_edge_devices():
-    """Функция заполняет список edge-свичей. Это нужно, чтобы потом
+    '''Функция заполняет список edge-свичей. Это нужно, чтобы потом
     не опрашивать их, когда будем работать с транзитными девайсами.
-    И дополнительно они послужат нам опорой, когда будем строить линии от центра к edge"""
+    И дополнительно они послужат нам опорой, когда будем строить линии от центра к edge'''
     global uplink_ip
     for i, device_ip in enumerate(devices.keys()):
         progress(i, 'Check edge status of device')
@@ -123,8 +119,8 @@ def get_edge_devices():
 
 
 def get_transit_devices(edge_device_mac):
-    """в этой функции попытаемся найти все транзитные свичи. Это те свичи,
-        у которых в базе есть мак эдж-свича на одном порту и мак аплинка - на другом"""
+    '''В этой функции попытаемся найти все транзитные свичи. Это те свичи,
+        у которых в базе есть мак edge-свича на одном порту и мак аплинка на другом'''
     transit = []
     with sqlite3.connect(dbname) as con:
         con.row_factory = sqlite3.Row
@@ -146,8 +142,8 @@ def get_transit_devices(edge_device_mac):
 
 
 def get_port_by_mac(ip, mac):
-    """Поучаем ип свича, на котором искать мак и отдаем порт,
-    на котором нашли этот мак. Так же определяем аплинк по мак-адресу агрегации"""
+    '''Поучаем IP свича, на котором искать мак и отдаем порт,
+    на котором нашли этот мак. Так же определяем аплинк по мак-адресу агрегации'''
     with sqlite3.connect(dbname) as con:
         con.row_factory = sqlite3.Row
         cursor = con.cursor()
@@ -163,12 +159,11 @@ def get_port_by_mac(ip, mac):
 
 
 def sort_transit_devices(transit_devices):
-    """эта функция пытается отсортировать список свичей так, чтобы в итоге получилась
-    линия, какая же как в реальной сети. Сначала копируем наш массив во временную переменную, 
-    именной в ней будем делать перестановки. Дальше для каждого девайса из списка находим кол-во транзитных свичей.
+    '''Эта функция пытается отсортировать список свичей так, чтобы в итоге получилась
+    линия, такая же как в реальной сети. Для каждого девайса из списка находим кол-во транзитных свичей.
     Это кол-во и будет являтся индексом в готовом массиве. Т.е. для агрегации кол-во транзита = 0, значит он в
-    начале списка. И так далее"""
-    tmp_tr_list = list(transit_devices)
+    начале списка. И так далее'''
+    tmp_tr_list = [None] * len(transit_devices)
     for dev_ip in transit_devices:
         if 'transit' not in devices[dev_ip].keys():
             # это нужно, чтобы вычислять транзит для одной железки только один раз
@@ -203,7 +198,7 @@ if args.ip:
 get_edge_devices() # находим edge-девайсы. Потом мы пойдем по списке и будем искать промежуточные свичи
 print
 
-
+# Создаем файл для grapthviz. Можно проверить результат работы без zabbix
 dot = open(cfg['zabbix']['mapname'] + '.gv', 'w')
 dot.write('strict digraph switches {\n')
 
@@ -280,10 +275,10 @@ for counter, sorted_transit_list in enumerate(sorted_all_lists):
     if max_height < y:
         max_height = y + 100
     x += 100 # сдвигаемся правее
-    # после того, как линию построили, нужно сделать из ее строку 
-    # вида   ip==ip==ip==ip, чтоб попарно добавить линии
+    # после того, как линию построили, нужно сделать из нее строку 
+    # вида ip==ip==ip==ip, чтоб попарно добавить линии
     lnk_str = '=='.join(sorted_transit_list)
-    # находим все пары, они должны быть перекрывающимися
+    # находим все пары, они должны быть перекрывающимися, regexp с флагом ?=
     for m in re.findall(r'(?=([1-9][0-9]+\.\d+\.\d+\.\d+)==([1-9][0-9]+\.\d+\.\d+\.\d+))', lnk_str):
         eselement1, eselement2 = m
         tmp = {
@@ -291,7 +286,7 @@ for counter, sorted_transit_list in enumerate(sorted_all_lists):
             'selementid2': devices[eselement2]['id_on_map'],
             'color': '00FF00'
         }
-        if tmp not in links:
+        if tmp not in links: 
             links.append(tmp)
 
     gv_list = ['"'+item+'"' for item in sorted_transit_list]  

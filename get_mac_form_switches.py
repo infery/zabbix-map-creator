@@ -122,4 +122,4 @@ for sw_ip in devices.keys():
 
 
 for sw_ip in to_debug:
-    print 'Cant collect macs from', mac.get_vendor_by_mac(devices[sw_ip]), sw_ip
+    print 'Cant collect fdb from', mac.get_vendor_by_mac(devices[sw_ip]), sw_ip
