@@ -1,0 +1,10 @@
+*.pyc
+*.db
+*.gv
+*.ini
+arps/
+db/
+bin/
+include/
+lib/
+lib64
