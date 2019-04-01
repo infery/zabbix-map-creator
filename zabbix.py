@@ -1,20 +1,19 @@
 #!/usr/bin/env python
 # coding: utf-8
-# этот модуль упрощает работу с zabbix
 
-from pyzabbix import ZabbixAPI
+from pyzabbix.api import ZabbixAPI
 
-def get_hostid_by_ip(ip, z_api):
-    result = z_api.do_request('host.get',
+
+def get_hostid_by_ip(z_api, ip):
+    result = z_api.do_request('hostinterface.get',
         {
             'filter': {
-                'host': ip
+                'ip': ip
             },
             'output': ['hostid','host']
         })
     if result['result']:
-        for ids in result['result']:
-            return ids['hostid']
+        return result['result'].pop()['hostid']
     else:
         return False
 

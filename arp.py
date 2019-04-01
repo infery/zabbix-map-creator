@@ -84,7 +84,7 @@ def get_hostids_from_zbx():
         if result:
             z = ZabbixAPI(url=cfg['zabbix']['zbx_url'], user=cfg['zabbix']['username'], password=cfg['zabbix']['password'])
             for i, row in enumerate(result):
-                hostid = zabbix.get_hostid_by_ip(ip=row['ip'], z_api=z)
+                hostid = zabbix.get_hostid_by_ip(z_api=z, ip=row['ip'])
                 if not hostid:
                     print 'Cant find host id for', row['ip']
                     continue
