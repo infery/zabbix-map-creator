@@ -4,6 +4,6 @@ configparser==3.7.4
 idna==2.8
 pexpect==4.6.0
 ptyprocess==0.6.0
-pyzabbix==0.7.5
+py-zabbix==1.1.5
 requests==2.21.0
 urllib3==1.24.1

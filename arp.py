@@ -6,7 +6,7 @@ import re
 from sys import stdout
 import argparse
 import configparser
-from pyzabbix import ZabbixAPI
+from pyzabbix.api import ZabbixAPI
 import zabbix
 import mac
 
