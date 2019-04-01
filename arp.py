@@ -31,7 +31,6 @@ def create_tables():
     не пересоздаем и не очищаем, в ней хранятся hostid из zabbix. Это нужно, чтобы
     каждый раз не опрашивать zabbix, т.к. это может занимать много времени'''
     global dbname
-    """Создаем таблицу в базе."""
     with sqlite3.connect(dbname) as con:
         con.execute("drop table if exists arp")
         con.execute("""create table arp (
