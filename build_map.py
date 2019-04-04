@@ -31,7 +31,7 @@ if 'use_zabbix' in cfg['zabbix']:
         use_zabbix = False 
     else:
         use_zabbix = True
-        print 'Cant understent option use_zabbix, default is True'
+        print 'Cant understend option use_zabbix, default is True'
 
 
 # для начала попытаемся найти все "крайние свичи", которые не являются транзитными
