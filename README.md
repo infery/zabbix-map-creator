@@ -31,6 +31,10 @@ database = example.db
 file_with_arp = example-cisco-show-ip-arp.txt
 
 [zabbix]
+; use zabbix.
+; yes, true - build map in zabbix
+; no, false - dont touch zabbix, generate only dot file with <mapname>
+use_zabbix = yes
 ; zabbix api creditionals
 username = Admin
 password = zabbix
