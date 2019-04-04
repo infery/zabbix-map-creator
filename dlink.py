@@ -28,11 +28,11 @@ def get_mac_address_table(switch_ip, login, password):
     t.sendline('show fdb')
     # если не хватает прав, clipaging не отключится
     # проще отловить All, чем переходить в enable и вводить пароль
-    ret = t.expect(['#', 'All']) 
+    ret = t.expect(['#', 'All'], timeout=120)
     mac_table = t.before
     if ret == 1:
         t.sendline('a')
-        t.expect('#')
+        t.expect('#', timeout=120)
         mac_table += t.before
     t.sendline('enable clipaging')
     t.expect('#')
