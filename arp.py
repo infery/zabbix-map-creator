@@ -20,6 +20,16 @@ cfg.read(args.config)
 dbname = cfg['network']['database']
 
 
+if 'use_zabbix' in cfg['zabbix']:
+    if cfg['zabbix']['use_zabbix'] in ['yes', 'true']:
+        use_zabbix = True
+    elif cfg['zabbix']['use_zabbix'] in ['no', 'false']:
+        use_zabbix = False 
+    else:
+        use_zabbix = True
+        print 'Cant understent option use_zabbix, default is True'
+
+
 def progress(i, msg):
     prgs = ['|', '/', '-', '\\']
     stdout.write("\r" + '[' + prgs[i % 4] + ']' + ' ' + msg)
@@ -76,6 +86,9 @@ def load_arp_to_db(filename):
 def get_hostids_from_zbx():
     '''Достаем из базы все IP, для которых zbx-hostid еще неизвестен и опрашиваем заббикс для них'''
     global dbname
+    global use_zabbix
+    if not use_zabbix:
+        return
     with sqlite3.connect(dbname) as con:
         con.row_factory = sqlite3.Row
         # выбираем все ипы, для которых не задан hostid

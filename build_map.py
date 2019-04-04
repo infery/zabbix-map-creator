@@ -22,8 +22,17 @@ cfg = configparser.ConfigParser()
 cfg.read(args.config)
 
 
-
 dbname = cfg['network']['database']
+
+if 'use_zabbix' in cfg['zabbix']:
+    if cfg['zabbix']['use_zabbix'] in ['yes', 'true']:
+        use_zabbix = True
+    elif cfg['zabbix']['use_zabbix'] in ['no', 'false']:
+        use_zabbix = False 
+    else:
+        use_zabbix = True
+        print 'Cant understent option use_zabbix, default is True'
+
 
 # для начала попытаемся найти все "крайние свичи", которые не являются транзитными
 # это те свичи, у которых маки железок или на аплинке или нет в fdb
@@ -44,11 +53,15 @@ def get_devices_list_from_db():
     with sqlite3.connect(dbname) as con:
         con.row_factory = sqlite3.Row
         result = con.execute("""SELECT arp.ip AS ip,
-                                       arp.mac AS mac,
-                                       arp.edge AS edge,
-                                       arp.uplink AS uplink,
-                                       zbxhosts.hostid AS zbxhostid
-                                FROM arp, zbxhosts WHERE arp.ip = zbxhosts.ip""")
+                                    arp.mac AS mac,
+                                    arp.edge AS edge,
+                                    arp.uplink AS uplink,
+                                    zbxhosts.hostid AS zbxhostid
+                                FROM
+                                    arp
+                                    LEFT JOIN zbxhosts
+                                            ON zbxhosts.ip = arp.ip
+        """)
         for row in result:
             if row['ip'] not in devices: 
                 devices[row['ip']] = {}
@@ -283,41 +296,44 @@ for counter, sorted_transit_list in enumerate(sorted_all_lists):
     else:
         y = 60
     j = 1 # j - это "номер" строки, на которую добавляем хост. Чем дальше свич от агрегации, тем ниже он на карте
-    for dev in sorted_transit_list:
-        j += 1
-        # этот хост еще не добавляли на карту
-        if devices[dev]['hostid'] not in added_hosts:
-            selements.append({
-                    'selementid': cnt,
-                    'elements': [{
-                        'hostid': devices[dev]['hostid']
-                    }],
-                    'elementtype': 0,
-                    'iconid_off': '2',
-                    'x': x,
-                    'y': y
-            })
-            y += 120    
-            devices[dev]['id_on_map'] = cnt
-            added_hosts.append(devices[dev]['hostid'])
-            cnt += 1 # selemetid Для каждого хоста будет уникален
-        y += 120    
-    if max_height < y:
-        max_height = y + 100
-    x += 100 # сдвигаемся правее
+
     # после того, как линию построили, нужно сделать из нее строку 
     # вида ip==ip==ip==ip, чтоб попарно добавить линии
     lnk_str = '=='.join(sorted_transit_list)
-    # находим все пары, они должны быть перекрывающимися, regexp с флагом ?=
-    for m in re.findall(r'(?=([1-9][0-9]+\.\d+\.\d+\.\d+)==([1-9][0-9]+\.\d+\.\d+\.\d+))', lnk_str):
-        eselement1, eselement2 = m
-        tmp = {
-            'selementid1': devices[eselement1]['id_on_map'],
-            'selementid2': devices[eselement2]['id_on_map'],
-            'color': '00FF00'
-        }
-        if tmp not in links: 
-            links.append(tmp)
+    if use_zabbix: 
+        for dev in sorted_transit_list:
+            j += 1
+            # этот хост еще не добавляли на карту
+            if devices[dev]['hostid'] not in added_hosts:
+                selements.append({
+                        'selementid': cnt,
+                        'elements': [{
+                            'hostid': devices[dev]['hostid']
+                        }],
+                        'elementtype': 0,
+                        'iconid_off': '2',
+                        'x': x,
+                        'y': y
+                })
+                y += 120    
+                devices[dev]['id_on_map'] = cnt
+                added_hosts.append(devices[dev]['hostid'])
+                cnt += 1 # selemetid Для каждого хоста будет уникален
+            y += 120    
+        if max_height < y:
+            max_height = y + 100
+        x += 100 # сдвигаемся правее
+
+        # находим все пары, они должны быть перекрывающимися, regexp с флагом ?=
+        for m in re.findall(r'(?=([1-9][0-9]+\.\d+\.\d+\.\d+)==([1-9][0-9]+\.\d+\.\d+\.\d+))', lnk_str):
+            eselement1, eselement2 = m
+            tmp = {
+                'selementid1': devices[eselement1]['id_on_map'],
+                'selementid2': devices[eselement2]['id_on_map'],
+                'color': '00FF00'
+            }
+            if tmp not in links: 
+                links.append(tmp)
 
     gv_list = ['"'+item+'"' for item in sorted_transit_list]  
     graph = ' -> '.join(gv_list)
@@ -326,12 +342,14 @@ for counter, sorted_transit_list in enumerate(sorted_all_lists):
 dot.write('}')
 dot.close()
 
-z_api = ZabbixAPI(url=cfg['zabbix']['zbx_url'], user=cfg['zabbix']['username'], password=cfg['zabbix']['password'])
-zabbix.create_or_update_map(z_api=z_api,
-    mapname=cfg['zabbix']['mapname'], 
-    selements=selements, 
-    links=links, 
-    mwidth=x+100, 
-    mheight=max_height)
-
+if use_zabbix:
+    z_api = ZabbixAPI(url=cfg['zabbix']['zbx_url'], user=cfg['zabbix']['username'], password=cfg['zabbix']['password'])
+    zabbix.create_or_update_map(z_api=z_api,
+        mapname=cfg['zabbix']['mapname'], 
+        selements=selements, 
+        links=links, 
+        mwidth=x+100, 
+        mheight=max_height)
+else:
+    print 'Check map in', cfg['zabbix']['mapname'] + '.gv'
 print 'Done'
