@@ -43,14 +43,14 @@ def get_mac_address_table(switch_ip, login, password):
     mac_dict = {}
     for entry in mac_table.split('\n'):
         if des_small_cli:
-            match = re.search('(?P<port>\d+)\s+(?P<mac_addr>\S+)\s+', entry)
+            match = re.search('^(?P<port>\d+)\s+(?P<mac_addr>\S+)\s+', entry)
         else:
             match = re.search('\d+\s+\S+\s+(?P<mac_addr>\S+)\s+(?P<port>\S+)\s+', entry)
 
         if match:
             if match.group('port') == 'CPU':
                 continue
-            if not match.group('port') in mac_dict:
+            if match.group('port') not in mac_dict:
                 mac_dict[match.group('port')] = []
             mac_addr = mac.normalize_mac(match.group('mac_addr'))
             mac_dict[match.group('port')].append(mac_addr)
