@@ -19,7 +19,6 @@ cfg.read(args.config)
 
 dbname = cfg['network']['database']
 
-
 if 'use_zabbix' in cfg['zabbix']:
     if cfg['zabbix']['use_zabbix'] in ['yes', 'true']:
         use_zabbix = True
@@ -60,19 +59,25 @@ def load_arp_to_db(filename):
     '''Парсим файл с arp и добавляем все записи в базу. Если вендор для мак-адреса не найден или ignore,
     то запись в базу не попадает, сообщаем об этом'''
     global dbname
+
     with sqlite3.connect(dbname) as con:
         # проверяем каждую строку на ip и мак, добавляем их в таблицу arp
         with (open(filename, 'r')) as arp_file:
             for line in arp_file:
                 if line.startswith('#'): 
                     continue
-                match = re.search('Internet\s+(?P<ip>\S+)\s+[\d\-]+\s+(?P<mac_addr>\S+)\s+ARPA', line)
+
+                if cfg['network']['arp_file_type'] == 'linux':
+                    match = re.search('^(?P<ip>\S+)\s+dev\s+\S+\s+lladdr\s+(?P<mac_addr>\S+)\s+[RS]', line)
+                elif cfg['network']['arp_file_type'] == 'cisco':
+                    match = re.search('Internet\s+(?P<ip>\S+)\s+[\d\-]+\s+(?P<mac_addr>\S+)\s+ARPA', line)
+
                 if not match: 
                     continue
                 mac_addr = mac.normalize_mac(match.group('mac_addr'))
                 vendor = mac.get_vendor_by_mac(mac_addr)
                 if not vendor:
-                    print 'Vendor for mac ', mac_addr, 'not found. Dont insert to DB'
+                    print 'Vendor for mac ', mac_addr, 'ip', match.group('ip'), 'not found. Dont insert to DB'
                     continue
                 if vendor == 'ignore':
                     continue
