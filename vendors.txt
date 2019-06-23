@@ -118,7 +118,7 @@ c4:71:fe;cisco
 00:17:94;cisco
 64:9e:f3;cisco
 50:57:a8;cisco
-
+00:15:f9;cisco
 
 1c:bd:b9;dlink
 9c:d6:43;dlink
@@ -154,6 +154,7 @@ c8:d3:a3;dlink
 c0:a0:bb;dlink
 cc:b2:55;dlink
 1c:af:f7;dlink
+ac:f1:df;dlink
 
 64:d1:54;mikrotik
 4c:5e:0c;mikrotik
@@ -170,6 +171,9 @@ e0:67:b3;cdata
 f8:f0:82;snr
 fc:fa:f7;snr
 00:03:0f;snr
+
+# vm
+aa:d2:c5;linux
 
 # UBNT
 00:27:22;ignore
@@ -194,3 +198,5 @@ da:8a:c2;ignore
 00:45:74;ignore
 
 30:71:b2;ignore
+
+38:60:77;ignore
