@@ -119,6 +119,7 @@ c4:71:fe;cisco
 64:9e:f3;cisco
 50:57:a8;cisco
 00:15:f9;cisco
+aa:bb:cc;cisco
 
 1c:bd:b9;dlink
 9c:d6:43;dlink
