@@ -325,7 +325,7 @@ for counter, sorted_transit_list in enumerate(sorted_all_lists):
         x += 100 # сдвигаемся правее
 
         # находим все пары, они должны быть перекрывающимися, regexp с флагом ?=
-        for m in re.findall(r'(?=([1-9][0-9]+\.\d+\.\d+\.\d+)==([1-9][0-9]+\.\d+\.\d+\.\d+))', lnk_str):
+        for m in re.findall(r'(?=([1-9][0-9][0-9]+\.\d+\.\d+\.\d+)==([1-9][0-9][0-9]+\.\d+\.\d+\.\d+))', lnk_str):
             eselement1, eselement2 = m
             tmp = {
                 'selementid1': devices[eselement1]['id_on_map'],
