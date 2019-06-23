@@ -18,6 +18,8 @@ cfg = configparser.ConfigParser()
 cfg.read(args.config)
 
 dbname = cfg['network']['database']
+uplink_mac = mac.normalize_mac(cfg['network']['uplink_mac'])
+uplink_mac_present = False
 
 if 'use_zabbix' in cfg['zabbix']:
     if cfg['zabbix']['use_zabbix'] in ['yes', 'true']:
@@ -59,6 +61,8 @@ def load_arp_to_db(filename):
     '''Парсим файл с arp и добавляем все записи в базу. Если вендор для мак-адреса не найден или ignore,
     то запись в базу не попадает, сообщаем об этом'''
     global dbname
+    global uplink_mac
+    global uplink_mac_present
 
     with sqlite3.connect(dbname) as con:
         # проверяем каждую строку на ip и мак, добавляем их в таблицу arp
@@ -86,6 +90,8 @@ def load_arp_to_db(filename):
                     mac_addr=mac_addr
                 ))
                 print 'added', mac_addr, 'ip', match.group('ip')
+                if uplink_mac == mac_addr:
+                    uplink_mac_present = True
 
 
 def get_hostids_from_zbx():
@@ -116,4 +122,5 @@ if __name__ == "__main__":
     create_tables()
     load_arp_to_db(filename=cfg['network']['file_with_arp'])
     get_hostids_from_zbx()
-    print '\n!UPLINK MAC-ADDRESS MUST BE IN ARP TABLE!\n'
+    if not uplink_mac_present:
+        print '\nWarning! There are no uplink\'s mac in arp-file\n'
