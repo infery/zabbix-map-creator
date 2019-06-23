@@ -299,7 +299,7 @@ for counter, sorted_transit_list in enumerate(sorted_all_lists):
 
     # после того, как линию построили, нужно сделать из нее строку 
     # вида ip==ip==ip==ip, чтоб попарно добавить линии
-    lnk_str = '=='.join(sorted_transit_list)
+    # lnk_str = '=='.join(sorted_transit_list)
     if use_zabbix: 
         for dev in sorted_transit_list:
             j += 1
@@ -324,9 +324,14 @@ for counter, sorted_transit_list in enumerate(sorted_all_lists):
             max_height = y + 100
         x += 100 # сдвигаемся правее
 
-        # находим все пары, они должны быть перекрывающимися, regexp с флагом ?=
-        for m in re.findall(r'(?=([1-9][0-9][0-9]+\.\d+\.\d+\.\d+)==([1-9][0-9][0-9]+\.\d+\.\d+\.\d+))', lnk_str):
-            eselement1, eselement2 = m
+        # example: dev1 dev2 dev3 dev4 dev5
+        for i in range(1, len(sorted_transit_list)):
+            # we should add link between dev2 and dev1 now
+            # on the next iteration we will add link between dev3 and dev2
+            # on the last iteration we will add link between dev5 and dev4
+            eselement1 = sorted_transit_list[i - 1] # i-1 is the first device during first iteration
+            eselement2 = sorted_transit_list[i]     # this is the second one during first iteration
+
             tmp = {
                 'selementid1': devices[eselement1]['id_on_map'],
                 'selementid2': devices[eselement2]['id_on_map'],
