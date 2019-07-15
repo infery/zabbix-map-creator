@@ -26,13 +26,13 @@ def get_vendor_by_mac(mac):
 
 def print_port_and_mac(mac_address_table):
     for port in mac_address_table.keys():
-        print 'Interface:', port
+        print('Interface:', port)
         for mac in mac_address_table[port]:
-            print '{:>22s}'.format(mac)
+            print('{:>22s}'.format(mac))
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
-        print 'mac:', normalize_mac(sys.argv[1])
-        print 'vendor:', get_vendor_by_mac(normalize_mac(sys.argv[1]))
+        print('mac:', normalize_mac(sys.argv[1]))
+        print('vendor:', get_vendor_by_mac(normalize_mac(sys.argv[1])))
     else:
-        print 'Please, run with [mac_addr] argument'
+        print('Please, run with [mac_addr] argument')
