@@ -200,11 +200,11 @@ def sort_transit_devices(transit_devices):
             # это нужно, чтобы вычислять транзит для одной железки только один раз
             # одна железка в транзитах может встречаться несколько раз
             devices[dev_ip]['transit'] = get_transit_devices(devices[dev_ip]['mac'])
-        index = len(devices[dev_ip]['transit'])  
+        index = len(devices[dev_ip]['transit'])
         try:
             tmp_tr_list[index] = dev_ip
         except IndexError:
-            print 'Cant sort for dev_ip:', dev_ip, ', transit count:', index, 'tmp_tr_list len =', str(len(tmp_tr_list))
+            print 'Cant sort for dev_ip:', dev_ip, ', transit count (index):', index, 'tmp_tr_list len =', str(len(tmp_tr_list))
             print 'Transit list on enter:', transit_devices, 'and searched mac', devices[dev_ip]['mac']
             print 'Trying to continue calculation'
             continue
