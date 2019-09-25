@@ -8,9 +8,10 @@ import configparser
 import argparse
 import sqlite3
 import re
-import mac
 from pyzabbix.api import ZabbixAPI
 import zabbix
+
+from device_modules import mac
 
 
 parser = argparse.ArgumentParser(description="Craft macs")

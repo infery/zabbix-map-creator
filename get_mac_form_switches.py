@@ -11,14 +11,8 @@ import sqlite3
 import argparse
 import configparser
 
-import mac # модуль для операция с мак-адресами
-import snr
-import qtech
-import dlink
-import cisco
-import bdcom
-import mikrotik
-import cdata
+from device_modules import mac, snr, qtech, dlink, cisco, bdcom, mikrotik, cdata
+
 
 parser = argparse.ArgumentParser(description="Craft macs")
 parser.add_argument('config', type=str, help="Config file name")

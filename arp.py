@@ -8,7 +8,7 @@ import argparse
 import configparser
 from pyzabbix.api import ZabbixAPI
 import zabbix
-import mac
+from device_modules import mac
 
 parser = argparse.ArgumentParser(description="ARP|Zabbix loader")
 parser.add_argument('config', type=str, help="Config file name")
