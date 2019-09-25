@@ -13,6 +13,7 @@ import configparser
 
 import mac # модуль для операция с мак-адресами
 import snr
+import qtech
 import dlink
 import cisco
 import bdcom
@@ -108,6 +109,8 @@ for sw_ip in devices.keys():
         mac_table = snr.get_mac_address_table(sw_ip, sw_username, sw_password)    
     elif vendor == 'cdata':
         mac_table = cdata.get_mac_address_table(sw_ip, sw_username, sw_password)
+    elif vendor == 'qtech':
+        mac_table = qtech.get_mac_address_table(sw_ip, sw_username, sw_password)
     if mac_table:
         print 'Collected mac from', str(len(mac_table.keys())), 'ports'
     else:
