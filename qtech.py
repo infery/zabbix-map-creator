@@ -20,24 +20,21 @@ def get_mac_address_table(switch_ip, login, password, stdout=False):
     t.sendline(login)
     t.expect('[Pp]assword:')
     t.sendline(password)
-    ret = t.expect(['#', '>'])
-    if ret == 1:
-        old_snr = True
-        t.sendline('enable')
-        t.expect('#')
+    t.expect('#')
     t.sendline('terminal length 0')
     t.expect('#')
-    if old_snr:
-        t.sendline('show mac address-table')
-    else:
-        t.sendline('show mac-address-table')
-    t.expect('#', timeout=120)
+    t.sendline('show mac address-table')
+    t.expect('#', timeout=240)
+    if 'Ambiguous command' in t.before:
+        ret = t.sendline('show mac-address-table')
+        t.expect('#', timeout=240)
+
     mac_table = t.before
     t.sendline('exit')
     mac_dict = {}
     for entry in mac_table.split('\n'):
         # 104 VLAN104 00-1A-A1-7F-6C-4B 28 Dynamic
-        match = re.search('\d+\s+(?P<mac_addr>\S+)\s+DYNAMIC (Hardware)?\s+(?P<port>\S+)', entry)
+        match = re.search('\d+\s+(?P<mac_addr>\S+)\s+DYNAMIC( Hardware)?\s+(?P<port>\S+)', entry, re.IGNORECASE)
         if match:
             if match.group('port') == 'CPU':
                 continue

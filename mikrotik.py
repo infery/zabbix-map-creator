@@ -7,9 +7,11 @@ import re
 import mac
 # import time
 
-def get_mac_address_table(switch_ip, login, password):
+def get_mac_address_table(switch_ip, login, password, stdout=False):
     """Принимает в качестве аргумента адрес свича и доступ"""
     t = pexpect.spawn('telnet {}'.format(switch_ip))
+    if stdout:
+        t.logfile = sys.stdout
     try:
         t.expect_exact('Login: ')
     except:
@@ -36,6 +38,6 @@ def get_mac_address_table(switch_ip, login, password):
 
 if __name__ == '__main__':
     if len(sys.argv) == 4:
-        mac.print_port_and_mac(get_mac_address_table(sys.argv[1], sys.argv[2], sys.argv[3]))
+        mac.print_port_and_mac(get_mac_address_table(sys.argv[1], sys.argv[2], sys.argv[3], True))
     else:
         print 'Please, run with [ip login password] arguments'

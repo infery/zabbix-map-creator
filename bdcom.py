@@ -6,8 +6,10 @@ import pexpect
 import re
 import mac
 
-def get_mac_address_table(switch_ip, login, password):
+def get_mac_address_table(switch_ip, login, password, stdout=False):
     t = pexpect.spawn('telnet {}'.format(switch_ip))
+    if stdout:
+        t.logfile = sys.stdout
     try:
         t.expect('[Uu]ser[Nn]ame:')
     except:
@@ -19,7 +21,7 @@ def get_mac_address_table(switch_ip, login, password):
     t.sendline('terminal length 0')
     t.expect('#')
     t.sendline('show mac address-table dynamic')
-    t.expect('#')
+    t.expect('#', timeout=600)
     mac_table = t.before
     t.sendline('exit')
     t.expect('>')
@@ -38,6 +40,6 @@ def get_mac_address_table(switch_ip, login, password):
 
 if __name__ == '__main__':
     if len(sys.argv) == 4:
-        mac.print_port_and_mac(get_mac_address_table(sys.argv[1], sys.argv[2], sys.argv[3]))
+        mac.print_port_and_mac(get_mac_address_table(sys.argv[1], sys.argv[2], sys.argv[3], True))
     else:
         print 'Please, run with [ip login password] arguments'
