@@ -82,41 +82,52 @@ get_devices_ip_list()
 inicialize_switch_tables()
 to_debug = [] # лист свичей, с которых по каким то причинам не собрались данные
 
-for sw_ip in devices.keys():
-    vendor = mac.get_vendor_by_mac(devices[sw_ip])
-    if not vendor:
-        print 'Please, add mac', devices[sw_ip], 'to vendor.txt'
-        continue
-    print 'Connect to', sw_ip, ', vendor', vendor
+def collect_fdb(ip_addresses):
+    global devices, to_debug
+    for sw_ip in ip_addresses:
+        vendor = mac.get_vendor_by_mac(devices[sw_ip])
+        if not vendor:
+            print('Please, add mac ' + devices[sw_ip] + ' to vendors.txt')
+            continue
+        print('Connect to ' + sw_ip + ', vendor ' + vendor)
 
-    if vendor == 'ignore':
-        continue
-    elif vendor == 'dlink':
-        mac_table = dlink.get_mac_address_table(sw_ip, sw_username, sw_password)
-    elif vendor == 'cisco':
-        mac_table = cisco.get_mac_address_table(sw_ip, sw_username, sw_password)
-    elif vendor == 'mikrotik':
-        mac_table = mikrotik.get_mac_address_table(sw_ip, sw_username, sw_password)
-    elif vendor == 'bdcom':
-        mac_table = bdcom.get_mac_address_table(sw_ip, sw_username, sw_password)
-    elif vendor == 'snr':
-        mac_table = snr.get_mac_address_table(sw_ip, sw_username, sw_password)    
-    elif vendor == 'cdata':
-        mac_table = cdata.get_mac_address_table(sw_ip, sw_username, sw_password)
-    elif vendor == 'qtech':
-        mac_table = qtech.get_mac_address_table(sw_ip, sw_username, sw_password)
-    if mac_table:
-        print 'Collected mac from', str(len(mac_table.keys())), 'ports'
-    else:
-        'Cant collect mac-address-table from', sw_ip
-        to_debug.append(sw_ip)
-        continue
+        if vendor == 'ignore':
+            continue
+        elif vendor == 'dlink':
+            mac_table = dlink.get_mac_address_table(sw_ip, sw_username, sw_password)
+        elif vendor == 'cisco':
+            mac_table = cisco.get_mac_address_table(sw_ip, sw_username, sw_password)
+        elif vendor == 'mikrotik':
+            mac_table = mikrotik.get_mac_address_table(sw_ip, sw_username, sw_password)
+        elif vendor == 'bdcom':
+            mac_table = bdcom.get_mac_address_table(sw_ip, sw_username, sw_password)
+        elif vendor == 'snr':
+            mac_table = snr.get_mac_address_table(sw_ip, sw_username, sw_password)    
+        elif vendor == 'cdata':
+            mac_table = cdata.get_mac_address_table(sw_ip, sw_username, sw_password)
+        elif vendor == 'qtech':
+            mac_table = qtech.get_mac_address_table(sw_ip, sw_username, sw_password)
+        if mac_table:
+            print('Collected mac from ' + str(len(mac_table.keys())) + ' ports')
+        else:
+            print('Cant collect mac-address-table from ' + sw_ip)
+            to_debug.append(sw_ip)
+            continue
 
-    mac_table = remove_abonents_mac_addresses(mac_table)
-    print 'After cleaning left', str(len(mac_table.keys())), 'ports'
-    add_mac_address_table_to_database(sw_ip, mac_table)
-    print '='*20
+        mac_table = remove_abonents_mac_addresses(mac_table)
+        print('After cleaning left ' + str(len(mac_table.keys())) + ' ports')
+        add_mac_address_table_to_database(sw_ip, mac_table)
+        print('='*20)
 
+# first try
+collect_fdb(devices.keys())
 
+# second try
+if to_debug:
+    print("\n\n=== Second try ===\n\n")
+    collect_fdb(to_debug)
+
+# final message if we still have unresponsive switches
+to_debug = set(to_debug)
 for sw_ip in to_debug:
-    print 'Cant collect fdb from', mac.get_vendor_by_mac(devices[sw_ip]), sw_ip
+    print('Cant collect fdb from ' + mac.get_vendor_by_mac(devices[sw_ip]) + ' ' + sw_ip)
