@@ -1,5 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
+
+"""
+Load arp from file to database.
+Get hostid from zabbix
+"""
+
 
 import sqlite3
 import re
@@ -28,7 +34,7 @@ if 'use_zabbix' in cfg['zabbix']:
         use_zabbix = False 
     else:
         use_zabbix = True
-        print 'Cant understend option use_zabbix, default is True'
+        print("Can't understand option use_zabbix, default is True")
 
 
 def progress(i, msg):
@@ -38,9 +44,8 @@ def progress(i, msg):
 
 
 def create_tables():
-    '''Создаем/Пересоздаем таблицу ARP при каждом запуске. Таблицу zbxhosts создаем, если не было, но
-    не пересоздаем и не очищаем, в ней хранятся hostid из zabbix. Это нужно, чтобы
-    каждый раз не опрашивать zabbix, т.к. это может занимать много времени'''
+    '''Recreate table `arp` in database for every run. Table `zbxhosts` we create only once,
+    because if's very long to request zabbix for every host every time'''
     global dbname
     with sqlite3.connect(dbname) as con:
         con.execute("drop table if exists arp")
@@ -58,14 +63,11 @@ def create_tables():
 
 
 def load_arp_to_db(filename):
-    '''Парсим файл с arp и добавляем все записи в базу. Если вендор для мак-адреса не найден или ignore,
-    то запись в базу не попадает, сообщаем об этом'''
     global dbname
     global uplink_mac
     global uplink_mac_present
 
     with sqlite3.connect(dbname) as con:
-        # проверяем каждую строку на ip и мак, добавляем их в таблицу arp
         with (open(filename, 'r')) as arp_file:
             for line in arp_file:
                 if line.startswith('#'): 
@@ -81,7 +83,7 @@ def load_arp_to_db(filename):
                 mac_addr = mac.normalize_mac(match.group('mac_addr'))
                 vendor = mac.get_vendor_by_mac(mac_addr)
                 if not vendor:
-                    print 'Vendor for mac ', mac_addr, 'ip', match.group('ip'), 'not found. Dont insert to DB'
+                    print('Vendor for mac ' + mac_addr + ' ip ' + str(match.group('ip')) + ' not found. Dont insert to DB')
                     continue
                 if vendor == 'ignore':
                     continue
@@ -89,7 +91,7 @@ def load_arp_to_db(filename):
                     ip=match.group('ip'),
                     mac_addr=mac_addr
                 ))
-                print 'added', mac_addr, 'ip', match.group('ip')
+                print ('added ' + mac_addr + ' ip ' + str(match.group('ip')))
                 if uplink_mac == mac_addr:
                     uplink_mac_present = True
 
@@ -102,14 +104,14 @@ def get_hostids_from_zbx():
         return
     with sqlite3.connect(dbname) as con:
         con.row_factory = sqlite3.Row
-        # выбираем все ипы, для которых не задан hostid
+        # SELECT all IPs, which have no hostid associated
         result = con.execute("SELECT ip FROM arp WHERE ip NOT IN (SELECT ip FROM zbxhosts WHERE hostid is NOT NULL)")
         if result:
             z = ZabbixAPI(url=cfg['zabbix']['zbx_url'], user=cfg['zabbix']['username'], password=cfg['zabbix']['password'])
             for i, row in enumerate(result):
                 hostid = zabbix.get_hostid_by_ip(z_api=z, ip=row['ip'])
                 if not hostid:
-                    print 'Cant find host id for', row['ip']
+                    print('Cant find host id for ' + row['ip'])
                     continue
                 con.execute("INSERT INTO zbxhosts (ip, hostid) values ('{ip}', '{hostid}')".format(
                     ip = row['ip'],
@@ -123,4 +125,4 @@ if __name__ == "__main__":
     load_arp_to_db(filename=cfg['network']['file_with_arp'])
     get_hostids_from_zbx()
     if not uplink_mac_present:
-        print '\nWarning! There are no uplink\'s mac in arp-file\n'
+        print('\nWarning! There are no uplink\'s mac in arp-file\n')
