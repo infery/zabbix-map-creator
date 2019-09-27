@@ -109,6 +109,10 @@ def collect_fdb(ip_addresses):
             mac_table = qtech.get_mac_address_table(sw_ip, sw_username, sw_password)
         if mac_table:
             print('Collected mac from ' + str(len(mac_table.keys())) + ' ports')
+            # In the very end of this script we will show switches, from which we couldn't collect fdb
+            # to_debug.remove(sw_ip) is necessary for second try
+            if sw_ip in to_debug:
+                to_debug.remove(sw_ip)
         else:
             print('Cant collect mac-address-table from ' + sw_ip)
             to_debug.append(sw_ip)
