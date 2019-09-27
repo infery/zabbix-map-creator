@@ -74,7 +74,7 @@ def load_arp_to_db(filename):
                 if cfg['network']['arp_file_type'] == 'linux':
                     match = re.search('^(?P<ip>\S+)\s+dev\s+\S+\s+lladdr\s+(?P<mac_addr>\S+)\s+[RSD]', line)
                 elif cfg['network']['arp_file_type'] == 'cisco':
-                    match = re.search('Internet\s+(?P<ip>\S+)\s+[\d\-]+\s+(?P<mac_addr>\S+)\s+ARPA', line)
+                    match = re.search('(Internet|IP)\s+(?P<ip>\S+)\s+[\d\-]+\s+(?P<mac_addr>\S+)\s+ARPA', line)
 
                 if not match: 
                     continue
