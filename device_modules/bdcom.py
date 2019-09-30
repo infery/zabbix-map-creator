@@ -6,14 +6,15 @@ import pexpect
 import re
 import mac
 
+
 def get_mac_address_table(switch_ip, login, password, stdout=False):
     t = pexpect.spawn('telnet {}'.format(switch_ip), encoding='utf-8')
     if stdout:
         t.logfile = sys.stdout
     try:
-        t.expect(u'[Uu]ser[Nn]ame:')
+        t.expect('[Uu]ser[Nn]ame:')
         t.sendline(login)
-        t.expect(u'[Pp]ass[Ww]ord:')
+        t.expect('[Pp]ass[Ww]ord:')
         t.sendline(password)
         t.expect('#', timeout=5)
         t.sendline(u'terminal length 0')
