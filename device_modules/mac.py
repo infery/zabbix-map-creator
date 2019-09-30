@@ -11,6 +11,7 @@ def normalize_mac(mac):
     mac = re.sub('([0-9a-f]{2})', r'\1:', mac, 5)
     return mac
 
+
 def get_vendor_by_mac(mac):
     """Пытаемся найти имя вендора в файле. Если нет, то вернем False"""
     with open('vendors.txt', 'r') as v:
@@ -24,11 +25,16 @@ def get_vendor_by_mac(mac):
         else:
             return False
 
+
 def print_port_and_mac(mac_address_table):
-    for port in mac_address_table.keys():
-        print('Interface:', port)
-        for mac in mac_address_table[port]:
-            print('{:>22s}'.format(mac))
+    if isinstance(mac_address_table, dict):
+        for port in mac_address_table.keys():
+            print('Interface: ' + port)
+            for mac in mac_address_table[port]:
+                print('{:>22s}'.format(mac))
+    else:
+        print("Expected dict, " + str(type(mac_address_table)) + " given")
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
