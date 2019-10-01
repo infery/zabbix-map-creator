@@ -12,18 +12,21 @@ def get_mac_address_table(switch_ip, login, password, stdout=False):
     if stdout:
         t.logfile = sys.stdout
     try:
-        t.expect('[Uu]ser[Nn]ame:')
+        t.expect(u'[Uu]ser[Nn]ame:')
         t.sendline(login)
-        t.expect('[Pp]ass[Ww]ord:')
+        t.expect(u'[Pp]ass[Ww]ord:')
         t.sendline(password)
-        t.expect('#', timeout=5)
+        ret = t.expect([u'#', u'>'], timeout=5)
+        if ret == 1:
+            t.sendline(u"enable")
+            t.expect(u"#", timeout=5)
         t.sendline(u'terminal length 0')
-        t.expect('#')
+        t.expect(u'#')
         t.sendline(u'show mac address-table dynamic')
-        t.expect('#', timeout=600)
+        t.expect(u'#', timeout=600)
         mac_table = t.before
         t.sendline(u'exit')
-        t.expect('>')
+        t.expect(u'>')
         t.sendline(u'exit')
         mac_dict = {}
         for entry in mac_table.split('\n'):
