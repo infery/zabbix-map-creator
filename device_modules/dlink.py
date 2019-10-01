@@ -4,7 +4,10 @@
 import sys
 import pexpect
 import re
-import mac
+if __name__ == '__main__':
+    import mac
+else:
+    from device_modules import mac
 
 
 def get_mac_address_table(switch_ip, login, password, stdout=False):

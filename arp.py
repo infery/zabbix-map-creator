@@ -118,6 +118,7 @@ def get_hostids_from_zbx():
                     hostid = hostid
                 ))
                 progress(i, 'Add hostids from zabbix to database')
+            print()
 
 
 if __name__ == "__main__":
