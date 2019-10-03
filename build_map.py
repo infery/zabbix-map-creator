@@ -204,17 +204,17 @@ def sort_transit_devices(transit_devices):
         try:
             tmp_tr_list[index] = dev_ip
         except IndexError:
-            print('Cant sort for dev_ip: {dev_ip}, transit count (index): {index}, tmp_tr_list len = {tmp_tr_list_len}'.format(
-                tmp_tr_list_len=str(len(tmp_tr_list)),
-                dev_ip=dev_ip,
-                index=index
+            print('Error occurred. It seems that one of your transit switches erroneously has longer transit path than his parent')
+            print("Tarnsit switch with ip {ip} has transit path:\n{ip_transit}\nwith same length as it's parent's transit path:\n{par_transit}\nbut it has to be shorter".format(
+                ip=dev_ip,
+                ip_transit=str(devices[dev_ip]['transit']),
+                par_transit=str(transit_devices)
             ))
-            print('Transit list on enter: {transit_devices}, and searched mac {mac}'.format(
-                mac=devices[dev_ip]['mac'],
-                transit_devices=str(transit_devices)
+            print("\nYou can find transit path for each switch with this command:\n./build_map.py {config} --ip=<IP>\n".format(
+                config=args.config
             ))
-            print('Trying to continue calculation')
-            continue
+            print("I can't build map with this. Exiting")
+            exit()
     return tmp_tr_list
 
 

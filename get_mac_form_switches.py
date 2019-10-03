@@ -112,7 +112,6 @@ def collect_fdb(ip_addresses):
             print('Cant collect mac-address-table from ' + sw_ip)
             to_debug.append(sw_ip)
             continue
-        # lol = mac_table.copy()
         mac_table = remove_abonents_mac_addresses(mac_table)
         print('After cleaning left ' + str(len(mac_table.keys())) + ' ports')
         add_mac_address_table_to_database(sw_ip, mac_table)
