@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 
 from pyzabbix.api import ZabbixAPI
@@ -19,7 +19,6 @@ def get_hostid_by_ip(z_api, ip):
 
 
 def create_or_update_map(z_api, mapname, selements, links, mwidth=1920, mheight=1280):
-    # возвращает ID карты
     result = z_api.do_request('map.get',
     {
         'filter': {
