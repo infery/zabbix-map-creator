@@ -1,11 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 
 import re
 import sys
 
 def normalize_mac(mac):
-    """Приводит любой мак к виду 11:22:33:44:55:66"""
     mac = mac.lower()
     mac = re.sub('[^a-f0-9]', '', mac)
     mac = re.sub('([0-9a-f]{2})', r'\1:', mac, 5)
@@ -13,7 +12,7 @@ def normalize_mac(mac):
 
 
 def get_vendor_by_mac(mac):
-    """Пытаемся найти имя вендора в файле. Если нет, то вернем False"""
+    """Try to find vendor name in file"""
     with open('vendors.txt', 'r') as v:
         for vendor in v:
             vendor = vendor.strip()
