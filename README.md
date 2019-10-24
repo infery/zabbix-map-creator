@@ -1,34 +1,41 @@
 # Zabbix map creator
-Набор скриптов для сбора мак-адресов с коммутаторов и автоматического создания карты сети в zabbix по ним.
+The collection of the scripts that helps you build L2 network topology map in Zabbix
 
 ```bash
-# загрузить данные в базу
+# Load arp table into database
 ./arp.py example.ini
 
-# собрать данные с коммутаторов
+# Collect fdb (mac address table) from switches
 ./get_mac_form_switches.py example.ini
 
-# построить топологию
+# Build topology
 ./build_map.py example.ini
 
-# проверить модуль dlink, должен выдать список портов и маков на них
+# Or you can check path to any switch in your network
+./build_map.py example.ini --ip 10.0.0.245
+
+# You can check any device in your network
+cd device_modules
 ./dlink.py 10.0.0.1 admin admin
+./snr.py 10.0.0.2 admin admin
 ```
 
-У вас может быть несколько топологий. Для каждой создается своя конфигурация в ini-файле.
-Каждый скрипт в качестве аргумента принимает имя файла с конфигурацией.
-Например, `./arp.py example.ini`
+
+You may have any number of topologies, each described in dedicated ini file.
+For example, `./arp.py example.ini`
 ```ini
 [network]
 ; switch's default gateway mac address
-uplink_mac = 001a.a17f.6c41
+uplink_mac = 8479.735f.7dcd
 ; switches creditionals
 sw_username = admin
-sw_password = admin
+sw_password = password
 ; sqlite database filename
-database = example.db
+database = db/example.db
 ; from wich file to load 'show ip arp'
-file_with_arp = example-cisco-show-ip-arp.txt
+file_with_arp = example_arp.txt
+; cisco (sh ip arp) or linux (ip nei show)
+arp_file_type = cisco
 
 [zabbix]
 ; use zabbix.
@@ -39,9 +46,10 @@ use_zabbix = yes
 username = Admin
 password = zabbix
 ; zabbix server url
-zbx_url = https://example.com/zabbix
+zbx_url = http://zabbix.example.com
 ; zabbix map to be created
-mapname = Network
+mapname = Example_map
 ```
 
-Сбор мак-адресов реализован на pexpect. Вендор коммутатора определяется по мак-адресу, список заполняется вручную в файле `vendors.txt`. Поддержку своих вендоров легко добавить по аналогии с теми, что уже есть (см. `get_mac_form_switches.py`)
+Collection of mac address tables from network devices 
+Mac address tables are collected usin pexpect with telnet. No snmp, cdp, lldp, etc. Only screen scraping.
