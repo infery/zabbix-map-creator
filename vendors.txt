@@ -677,6 +677,9 @@ e4:8d:8c;mikrotik
 6c:3b:6b;mikrotik
 d4:ca:6d;mikrotik
 00:0c:42;mikrotik
+fe:0e:67;mikrotik
+b8:69:f4;mikrotik
+74:4d:28;mikrotik
 
 00:e0:0f;bdcom
 84:79:73;bdcom
