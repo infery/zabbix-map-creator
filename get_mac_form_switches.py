@@ -77,7 +77,7 @@ get_devices_ip_list()
 inicialize_switch_tables()
 to_debug = []
 
-def collect_fdb(ip_addresses):
+def collect_fdb(ip_addresses, second_try=False):
     global devices, to_debug
     for sw_ip in ip_addresses:
         vendor = mac.get_vendor_by_mac(devices[sw_ip])
@@ -110,7 +110,8 @@ def collect_fdb(ip_addresses):
                 to_debug.remove(sw_ip)
         else:
             print('Cant collect mac-address-table from ' + sw_ip)
-            to_debug.append(sw_ip)
+            if not second_try:
+                to_debug.append(sw_ip)
             continue
         mac_table = remove_abonents_mac_addresses(mac_table)
         print('After cleaning left ' + str(len(mac_table.keys())) + ' ports')
@@ -120,10 +121,10 @@ def collect_fdb(ip_addresses):
 # first try
 collect_fdb(list(devices.keys()))
 
-# second try
+# # second try
 if to_debug:
     print("\n\n=== Second try ===\n\n")
-    collect_fdb(to_debug)
+    collect_fdb(to_debug, second_try=True)
 
 # final message if we still have unresponsive switches
 to_debug = set(to_debug)
