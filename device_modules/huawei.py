@@ -15,10 +15,7 @@ def get_mac_address_table(switch_ip, login, password, stdout=False):
     if stdout:
         t.logfile = sys.stdout
     try:
-        ret = t.expect(['[Uu]ser[Nn]ame:', 'login:'], timeout=5)
-        if ret == 1:
-            nexus = True
-
+        t.expect(['[Uu]ser[Nn]ame:', 'login:'], timeout=5)
         t.sendline(login)
         t.expect('[Pp]ass[Ww]ord:')
         t.sendline(password)
