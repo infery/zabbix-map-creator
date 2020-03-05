@@ -225,7 +225,7 @@ if 'uplink_mac' in cfg['network']:
     print('Using configured uplink mac {mac}'.format(mac=uplink_mac))
 else:
     uplink_mac = possible_uplink_mac
-    print('Configured uplink mac not found, using calculated mac {mac}'.formac(mac=possible_uplink_mac))
+    print('Configured uplink mac not found, using calculated mac {mac}'.format(mac=possible_uplink_mac))
 
 uplink_ip = ''
 
