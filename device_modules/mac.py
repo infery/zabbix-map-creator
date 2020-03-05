@@ -20,7 +20,7 @@ def get_vendor_by_mac(mac):
             if len(vendor) == 0: continue
             oui, v_name = vendor.split(';')
             if oui == mac[0:8]:
-                return v_name.strip()
+                return v_name.strip().lower()
         else:
             return False
 
