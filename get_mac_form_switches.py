@@ -7,7 +7,7 @@ import sqlite3
 import argparse
 import configparser
 
-from device_modules import mac, snr, qtech, dlink, cisco, bdcom, mikrotik, cdata, huawei, eltex, hp
+from device_modules import mac, snr, qtech, dlink, cisco, bdcom, mikrotik, cdata, huawei, eltex, hp, extreme
 
 
 parser = argparse.ArgumentParser(description="Craft macs")
@@ -108,6 +108,8 @@ def collect_fdb(ip_addresses, second_try=False):
             mac_table = eltex.get_mac_address_table(sw_ip, sw_username, sw_password)
         elif vendor == 'hp':
             mac_table = hp.get_mac_address_table(sw_ip, sw_username, sw_password)
+        elif vendor == 'extreme':
+            mac_table = extreme.get_mac_address_table(sw_ip, sw_username, sw_password)
         if mac_table:
             print('Collected mac from ' + str(len(mac_table.keys())) + ' ports')
             # In the very end of this script we will show switches, from which we couldn't collect fdb
